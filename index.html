@@ -1,1 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Message</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+html, body {
+  width: 100%; height: 100%;
+  background: #07070f;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+#bg-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+#lang-screen {
+  position: fixed;
+  inset: 0;
+  background: rgba(7,7,15,0.94);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
+}
+
+#lang-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.lang-box {
+  text-align: center;
+  padding: 2rem;
+  max-width: 540px;
+  width: 100%;
+}
+
+.lang-box h1 {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #64748b;
+  margin-bottom: 1.8rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.lang-btn {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: #e2e8f0;
+  padding: 14px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-family: inherit;
+}
+
+.lang-btn span.flag { font-size: 1.4rem; }
+.lang-btn span.name { font-size: 0.7rem; color: #64748b; letter-spacing: 0.03em; }
+
+.lang-btn:hover {
+  background: rgba(167,139,250,0.1);
+  border-color: rgba(167,139,250,0.35);
+  color: #a78bfa;
+  transform: translateY(-2px);
+}
+
+#main-screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 10;
+}
+
+.content-card {
+  position: relative;
+  max-width: 620px;
+  width: 100%;
+  background: rgba(7,7,20,0.7);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 20px;
+  padding: 2.8rem 2.4rem;
+  animation: card-in 0.9s cubic-bezier(0.16,1,0.3,1) both;
+  animation-delay: 0.1s;
+  opacity: 0;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card-glow-top {
+  position: absolute;
+  top: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 2px;
+  background: linear-gradient(90deg, transparent, #a78bfa, #f472b6, transparent);
+  border-radius: 2px;
+}
+
+.card-glow-bottom {
+  position: absolute;
+  bottom: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 70px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(52,211,153,0.7), transparent);
+  border-radius: 1px;
+}
+
+.message-text {
+  font-size: 1.05rem;
+  line-height: 1.9;
+  color: #e2e8f0;
+  white-space: pre-wrap;
+  margin-bottom: 2.4rem;
+}
+
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+  margin: 0 0 1.8rem;
+}
+
+.nick-section { display: flex; flex-direction: column; gap: 10px; }
+
+.nick-label {
+  font-size: 0.83rem;
+  color: #94a3b8;
+  line-height: 1.55;
+}
+
+.nick-row { display: flex; gap: 10px; }
+
+.nick-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  color: #e2e8f0;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.nick-input::placeholder { color: rgba(148,163,184,0.4); }
+
+.nick-input:focus {
+  border-color: rgba(167,139,250,0.45);
+  box-shadow: 0 0 0 3px rgba(167,139,250,0.07);
+}
+
+.nick-input.error {
+  border-color: rgba(244,114,182,0.6);
+  box-shadow: 0 0 0 3px rgba(244,114,182,0.08);
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.nick-send {
+  background: rgba(167,139,250,0.12);
+  border: 1px solid rgba(167,139,250,0.28);
+  color: #a78bfa;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.nick-send:hover {
+  background: rgba(167,139,250,0.2);
+  border-color: rgba(167,139,250,0.55);
+}
+
+.nick-error {
+  font-size: 0.78rem;
+  color: #f472b6;
+  min-height: 1rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.nick-error.visible { opacity: 1; }
+
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4,4,12,0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+
+#modal-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-card {
+  position: relative;
+  max-width: 480px;
+  width: 100%;
+  background: rgba(10,10,24,0.9);
+  border: 1px solid rgba(255,255,255,0.11);
+  border-radius: 20px;
+  padding: 2.4rem 2.2rem;
+  text-align: center;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+
+#modal-overlay.visible .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-glow-top {
+  position: absolute;
+  top: -1px; left: 50%;
+  transform: translateX(-50%);
+  width: 100px; height: 2px;
+  background: linear-gradient(90deg, transparent, #a78bfa, #f472b6, transparent);
+  border-radius: 2px;
+}
+
+.modal-nick {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin-bottom: 1.2rem;
+  letter-spacing: 0.01em;
+}
+
+.modal-nick span {
+  color: #a78bfa;
+}
+
+.modal-text {
+  font-size: 0.97rem;
+  line-height: 1.8;
+  color: #94a3b8;
+  white-space: pre-wrap;
+}
+
+.modal-close {
+  margin-top: 2rem;
+  background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.25);
+  color: #a78bfa;
+  border-radius: 10px;
+  padding: 9px 28px;
+  font-size: 0.87rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.modal-close:hover {
+  background: rgba(167,139,250,0.2);
+  border-color: rgba(167,139,250,0.5);
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="lang-screen">
+  <div class="lang-box">
+    <h1>Choose your language</h1>
+    <div class="lang-grid">
+      <button class="lang-btn" data-lang="ru" onclick="selectLang(this)"><span class="flag">🇷🇺</span><span class="name">Русский</span></button>
+      <button class="lang-btn" data-lang="en" onclick="selectLang(this)"><span class="flag">🇬🇧</span><span class="name">English</span></button>
+      <button class="lang-btn" data-lang="de" onclick="selectLang(this)"><span class="flag">🇩🇪</span><span class="name">Deutsch</span></button>
+      <button class="lang-btn" data-lang="fr" onclick="selectLang(this)"><span class="flag">🇫🇷</span><span class="name">Français</span></button>
+      <button class="lang-btn" data-lang="es" onclick="selectLang(this)"><span class="flag">🇪🇸</span><span class="name">Español</span></button>
+      <button class="lang-btn" data-lang="pl" onclick="selectLang(this)"><span class="flag">🇵🇱</span><span class="name">Polski</span></button>
+      <button class="lang-btn" data-lang="ja" onclick="selectLang(this)"><span class="flag">🇯🇵</span><span class="name">日本語</span></button>
+      <button class="lang-btn" data-lang="th" onclick="selectLang(this)"><span class="flag">🇹🇭</span><span class="name">ภาษาไทย</span></button>
+      <button class="lang-btn" data-lang="zh" onclick="selectLang(this)"><span class="flag">🇨🇳</span><span class="name">中文</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="main-screen">
+  <div class="content-card">
+    <div class="card-glow-top"></div>
+    <div class="card-glow-bottom"></div>
+    <div class="message-text" id="message-text"></div>
+    <div class="divider"></div>
+    <div class="nick-section">
+      <div class="nick-label" id="nick-label"></div>
+      <div class="nick-row">
+        <input type="text" class="nick-input" id="nick-input" maxlength="40">
+        <button class="nick-send" id="nick-send" onclick="sendNick()">→</button>
+      </div>
+      <div class="nick-error" id="nick-error"></div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-card">
+    <div class="modal-glow-top"></div>
+    <div class="modal-nick" id="modal-nick"></div>
+    <div class="modal-text" id="modal-text"></div>
+    <button class="modal-close" id="modal-close" onclick="closeModal()"></button>
+  </div>
+</div>
+
+<script>
+const MESSAGES = {
+  ru: `Здесь будет твоё сообщение на русском языке.\n\nЗамени этот текст в переменной MESSAGES['ru'].`,
+  en: `Your message in English goes here.\n\nReplace this text in the MESSAGES['en'] variable.`,
+  de: `Deine Nachricht auf Deutsch kommt hierher.\n\nErsetze diesen Text in MESSAGES['de'].`,
+  fr: `Ton message en français est ici.\n\nRemplace ce texte dans MESSAGES['fr'].`,
+  es: `Tu mensaje en español va aquí.\n\nReemplaza este texto en MESSAGES['es'].`,
+  pl: `Twoja wiadomość po polsku jest tutaj.\n\nZastąp ten tekst w MESSAGES['pl'].`,
+  ja: `あなたへのメッセージはここに入ります。\n\nMESSAGES['ja']のテキストを置き換えてください。`,
+  th: `ข้อความของคุณเป็นภาษาไทยอยู่ที่นี่\n\nแทนที่ข้อความนี้ใน MESSAGES['th']`,
+  zh: `你的中文信息在这里。\n\n请替换 MESSAGES['zh'] 中的文本。`
+};
+
+const NICK_REPLY = {
+  ru: `Замени этот текст на своё сообщение для тех кто ввёл ник.\n\nЗдесь можно написать что угодно — оно появится после отправки.`,
+  en: `Replace this with your reply message for people who left their nickname.\n\nWrite whatever you want here.`,
+  de: `Ersetze dies durch deine Antwortnachricht für Leute, die ihren Nicknamen eingegeben haben.`,
+  fr: `Remplace ceci par ton message de réponse pour ceux qui ont laissé leur pseudo.`,
+  es: `Reemplaza esto con tu mensaje de respuesta para quienes dejaron su nick.`,
+  pl: `Zastąp to swoją wiadomością odpowiedzi dla osób, które podały nick.`,
+  ja: `ニックネームを入力した人への返信メッセージに置き換えてください。`,
+  th: `แทนที่ด้วยข้อความตอบกลับสำหรับคนที่ฝากนิคไว้`,
+  zh: `请替换为给留下昵称的人的回复消息。`
+};
+
+const NICK_LABELS = {
+  ru: 'Если хочешь — напиши свой игровой ник, и я напишу тебе сам :)',
+  en: "If you want — leave your game nickname, and I'll message you myself :)",
+  de: 'Wenn du möchtest — schreib deinen Spielnamen, ich melde mich bei dir :)',
+  fr: "Si tu veux — laisse ton pseudo de jeu, et je t'écrirai moi-même :)",
+  es: 'Si quieres — escribe tu nick de juego, y te escribiré yo mismo :)',
+  pl: 'Jeśli chcesz — wpisz swój nick w grze, a sam do ciebie napiszę :)',
+  ja: 'よかったら — ゲームのニックネームを書いてね、私から連絡するよ :)',
+  th: 'ถ้าอยากได้ — ฝากนิคเกมไว้ แล้วฉันจะทักเองนะ :)',
+  zh: '如果你愿意 — 留下你的游戏昵称，我会亲自联系你 :)'
+};
+
+const NICK_PLACEHOLDERS = {
+  ru: 'Ваш игровой ник...', en: 'Your game nickname...', de: 'Dein Spielname...',
+  fr: 'Ton pseudo...', es: 'Tu nick...', pl: 'Twój nick...',
+  ja: 'ニックネーム...', th: 'นิคเกม...', zh: '游戏昵称...'
+};
+
+const NICK_ERRORS = {
+  ru: 'Пожалуйста, введи свой ник', en: 'Please enter your nickname',
+  de: 'Bitte gib deinen Nicknamen ein', fr: 'Veuillez entrer ton pseudo',
+  es: 'Por favor ingresa tu nick', pl: 'Proszę wpisz swój nick',
+  ja: 'ニックネームを入力してください', th: 'กรุณาใส่นิคเกม', zh: '请输入您的昵称'
+};
+
+const SEND_LABELS = {
+  ru: 'Отправить', en: 'Send', de: 'Senden', fr: 'Envoyer',
+  es: 'Enviar', pl: 'Wyślij', ja: '送信', th: 'ส่ง', zh: '发送'
+};
+
+const CLOSE_LABELS = {
+  ru: 'Закрыть', en: 'Close', de: 'Schließen', fr: 'Fermer',
+  es: 'Cerrar', pl: 'Zamknij', ja: '閉じる', th: 'ปิด', zh: '关闭'
+};
+
+let currentLang = null;
+
+function getCookie(n) {
+  const v = document.cookie.split(';').find(c => c.trim().startsWith(n + '='));
+  return v ? decodeURIComponent(v.trim().slice(n.length + 1)) : null;
+}
+
+function setCookie(n, v, days) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 86400000);
+  document.cookie = `${n}=${encodeURIComponent(v)};expires=${d.toUTCString()};path=/`;
+}
+
+function applyLang(lang) {
+  document.getElementById('message-text').textContent = MESSAGES[lang] || MESSAGES['en'];
+  document.getElementById('nick-label').textContent = NICK_LABELS[lang] || NICK_LABELS['en'];
+  document.getElementById('nick-input').placeholder = NICK_PLACEHOLDERS[lang] || '';
+  document.getElementById('nick-send').textContent = SEND_LABELS[lang] || 'Send';
+  document.getElementById('modal-close').textContent = CLOSE_LABELS[lang] || 'Close';
+}
+
+function selectLang(btn) {
+  currentLang = btn.dataset.lang;
+  setCookie('site_lang', currentLang, 365);
+  document.getElementById('lang-screen').classList.add('hidden');
+  applyLang(currentLang);
+}
+
+function sendNick() {
+  const input = document.getElementById('nick-input');
+  const errorEl = document.getElementById('nick-error');
+  const nick = input.value.trim();
+
+  if (!nick) {
+    errorEl.textContent = NICK_ERRORS[currentLang] || NICK_ERRORS['en'];
+    errorEl.classList.add('visible');
+    input.classList.add('error');
+    input.addEventListener('animationend', () => input.classList.remove('error'), { once: true });
+    return;
+  }
+
+  errorEl.classList.remove('visible');
+  openModal(nick);
+}
+
+function openModal(nick) {
+  const lang = currentLang || 'en';
+  document.getElementById('modal-nick').innerHTML = `<span>${nick}</span>`;
+  document.getElementById('modal-text').textContent = NICK_REPLY[lang] || NICK_REPLY['en'];
+  document.getElementById('modal-overlay').classList.add('visible');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.getElementById('modal-close')) return;
+  document.getElementById('modal-overlay').classList.remove('visible');
+}
+
+document.getElementById('nick-input').addEventListener('keydown', e => { if (e.key === 'Enter') sendNick(); });
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal-overlay').classList.remove('visible');
+});
+
+window.addEventListener('load', () => {
+  const saved = getCookie('site_lang');
+  if (saved && MESSAGES[saved]) {
+    currentLang = saved;
+    applyLang(saved);
+    document.getElementById('lang-screen').classList.add('hidden');
+  }
+  initCanvas();
+});
+
+function initCanvas() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    buildDots();
+  }
+
+  let mouseX = 0, mouseY = 0;
+  window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+  window.addEventListener('touchmove', e => { mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; }, { passive: true });
+
+  const SPACING = 38;
+  const INFLUENCE = 130;
+  const MAX_PUSH = 44;
+  const DOT_COLORS = ['#a78bfa','#f472b6','#34d399','#60a5fa','#fbbf24'];
+  let dots = [];
+
+  function buildDots() {
+    dots = [];
+    const cols = Math.ceil(W / SPACING) + 2;
+    const rows = Math.ceil(H / SPACING) + 2;
+    const offX = (W - (cols - 1) * SPACING) / 2;
+    const offY = (H - (rows - 1) * SPACING) / 2;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const ox = offX + c * SPACING;
+        const oy = offY + r * SPACING;
+        const fade = 1 - Math.hypot(ox - W/2, oy - H/2) / Math.hypot(W/2, H/2);
+        const color = Math.random() < 0.14 ? DOT_COLORS[Math.floor(Math.random() * DOT_COLORS.length)] : '#ffffff';
+        dots.push({ ox, oy, x: ox, y: oy, size: 1.1 + fade * 1.5, alpha: 0.06 + fade * 0.26, color });
+      }
+    }
+  }
+
+  let bx, by, bvx = 0, bvy = 0, tbx, tby;
+
+  const BLOB_R = 88;
+  const NUM_PTS = 72;
+  let pts = [], pvels = [];
+
+  function initBlob() {
+    pts = []; pvels = [];
+    for (let i = 0; i < NUM_PTS; i++) {
+      const a = (i / NUM_PTS) * Math.PI * 2;
+      pts.push([Math.cos(a) * BLOB_R, Math.sin(a) * BLOB_R]);
+      pvels.push([0, 0]);
+    }
+  }
+
+  let drops = [], dropTimer = 0, idleTime = 0, prevMx = 0, prevMy = 0;
+
+  function spawnDrop() {
+    drops.push({
+      x: bx + (Math.random() - 0.5) * BLOB_R * 0.6,
+      y: by + BLOB_R * 0.75,
+      vx: (Math.random() - 0.5) * 0.7,
+      vy: 0.5 + Math.random() * 1.2,
+      r: 2.5 + Math.random() * 4.5,
+      life: 1
+    });
+  }
+
+  let t = 0;
+
+  function frame() {
+    requestAnimationFrame(frame);
+    t += 0.01;
+
+    const mspdX = mouseX - prevMx, mspdY = mouseY - prevMy;
+    if (Math.sqrt(mspdX*mspdX + mspdY*mspdY) > 0.5) idleTime = 0; else idleTime++;
+    prevMx = mouseX; prevMy = mouseY;
+
+    tbx += (mouseX - tbx) * 0.055;
+    tby += (mouseY - tby) * 0.055;
+    const fx = (tbx - bx) * 0.048, fy = (tby - by) * 0.048;
+    bvx = (bvx + fx) * 0.80; bvy = (bvy + fy) * 0.80;
+    bx += bvx; by += bvy;
+
+    const speed = Math.sqrt(bvx*bvx + bvy*bvy);
+    const moveAngle = speed > 0.01 ? Math.atan2(bvy, bvx) : 0;
+    const squish = Math.min(speed * 0.016, 0.5);
+
+    for (let i = 0; i < NUM_PTS; i++) {
+      const a = (i / NUM_PTS) * Math.PI * 2;
+      const la = a - moveAngle;
+      const sx = 1 + squish * Math.cos(la) * 0.85;
+      const sy = 1 - squish * Math.abs(Math.sin(la)) * 0.45;
+      const ripple = Math.sin(a*3 + t*2.2)*5 + Math.sin(a*5 - t*1.5)*3 + Math.sin(a*8 + t*3.1)*1.5;
+      const tx2 = bx + Math.cos(a) * BLOB_R * sx + Math.cos(a) * ripple;
+      const ty2 = by + Math.sin(a) * BLOB_R * sy + Math.sin(a) * ripple;
+      pvels[i][0] = (pvels[i][0] + (tx2 - (bx + pts[i][0])) * 0.22) * 0.70;
+      pvels[i][1] = (pvels[i][1] + (ty2 - (by + pts[i][1])) * 0.22) * 0.70;
+      pts[i][0] += pvels[i][0];
+      pts[i][1] += pvels[i][1];
+    }
+
+    if (idleTime > 45) {
+      dropTimer++;
+      if (dropTimer > 22 + Math.random() * 18) { spawnDrop(); dropTimer = 0; }
+    }
+
+    ctx.fillStyle = '#07070f';
+    ctx.fillRect(0, 0, W, H);
+
+    dots.forEach(d => {
+      const dx = bx - d.ox, dy = by - d.oy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      let tx3 = d.ox, ty3 = d.oy, size = d.size, alpha = d.alpha;
+      if (dist < INFLUENCE) {
+        const f = 1 - dist / INFLUENCE;
+        const ang = Math.atan2(dy, dx);
+        tx3 = d.ox - Math.cos(ang) * f * MAX_PUSH;
+        ty3 = d.oy - Math.sin(ang) * f * MAX_PUSH;
+        size = d.size * (1 + f * 1.0);
+        alpha = Math.min(0.95, d.alpha + f * 0.5);
+      }
+      d.x += (tx3 - d.x) * 0.12;
+      d.y += (ty3 - d.y) * 0.12;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, size, 0, Math.PI*2);
+      ctx.fillStyle = d.color;
+      ctx.globalAlpha = alpha;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(bx + pts[0][0], by + pts[0][1]);
+    for (let i = 1; i <= NUM_PTS; i++) {
+      const prev = pts[(i-1+NUM_PTS)%NUM_PTS];
+      const curr = pts[i%NUM_PTS];
+      const next = pts[(i+1)%NUM_PTS];
+      ctx.bezierCurveTo(
+        bx+(prev[0]+curr[0])/2, by+(prev[1]+curr[1])/2,
+        bx+curr[0], by+curr[1],
+        bx+(curr[0]+next[0])/2, by+(curr[1]+next[1])/2
+      );
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(255,255,255,0.035)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+    ctx.lineWidth = 1.3;
+    ctx.stroke();
+
+    const grd = ctx.createRadialGradient(
+      bx - BLOB_R*0.25 + bvx*0.3, by - BLOB_R*0.28 + bvy*0.3, BLOB_R*0.05,
+      bx - BLOB_R*0.1, by - BLOB_R*0.1, BLOB_R*0.75
+    );
+    grd.addColorStop(0, 'rgba(255,255,255,0.22)');
+    grd.addColorStop(0.4, 'rgba(255,255,255,0.06)');
+    grd.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.ellipse(bx - BLOB_R*0.18 + bvx*0.2, by - BLOB_R*0.2 + bvy*0.2, BLOB_R*0.65, BLOB_R*0.55, 0, 0, Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(bx - BLOB_R*0.3 + bvx*0.15, by - BLOB_R*0.38 + bvy*0.15, BLOB_R*0.13, BLOB_R*0.07, -0.3, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,0.32)';
+    ctx.fill();
+    ctx.restore();
+
+    for (let i = drops.length-1; i >= 0; i--) {
+      const d = drops[i];
+      d.vy += 0.1; d.vx *= 0.99;
+      d.x += d.vx; d.y += d.vy;
+      d.life -= 0.007;
+      if (d.life <= 0 || d.y > H + 20) { drops.splice(i, 1); continue; }
+      const a = Math.min(d.life * 3, 1) * 0.6;
+      const stretch = 1 + d.vy * 0.07;
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(d.x, d.y, d.r * 0.65, d.r * stretch, 0, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${a * 0.12})`;
+      ctx.fill();
+      ctx.strokeStyle = `rgba(255,255,255,${a * 0.55})`;
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(d.x - d.r*0.18, d.y - d.r*0.28, d.r*0.18, d.r*0.12, 0, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(255,255,255,${a * 0.4})`;
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  bx = W/2; by = H/2; tbx = W/2; tby = H/2;
+  initBlob();
+  frame();
+}
+</script>
+</body>
+</html>
