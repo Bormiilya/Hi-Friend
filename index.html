@@ -353,27 +353,27 @@ html, body {
 
 <script>
 const MESSAGES = {
-  ru: `Здесь будет твоё сообщение на русском языке.\n\nЗамени этот текст в переменной MESSAGES['ru'].`,
-  en: `Your message in English goes here.\n\nReplace this text in the MESSAGES['en'] variable.`,
-  de: `Deine Nachricht auf Deutsch kommt hierher.\n\nErsetze diesen Text in MESSAGES['de'].`,
-  fr: `Ton message en français est ici.\n\nRemplace ce texte dans MESSAGES['fr'].`,
-  es: `Tu mensaje en español va aquí.\n\nReemplaza este texto en MESSAGES['es'].`,
-  pl: `Twoja wiadomość po polsku jest tutaj.\n\nZastąp ten tekst w MESSAGES['pl'].`,
-  ja: `あなたへのメッセージはここに入ります。\n\nMESSAGES['ja']のテキストを置き換えてください。`,
-  th: `ข้อความของคุณเป็นภาษาไทยอยู่ที่นี่\n\nแทนที่ข้อความนี้ใน MESSAGES['th']`,
-  zh: `你的中文信息在这里。\n\n请替换 MESSAGES['zh'] 中的文本。`
+  ru: `Ты что реально тут? Океей...\n\n Меня зовут Илья\n Если я АФК то я отвечу когда приду`,
+  en: `Are you really here? Okay...\n\nMy name is Ilya. We can chat. If you don’t know the language, just turn on the in-game translator — it’s very easy to do.\nIf you don’t know how to enable it, just let me know :)\nIf I’m AFK, I’ll reply when I come back.`,
+  de: `Bist du wirklich hier? Okay...\n\nIch heiße Ilya. Wir können reden. Wenn du die Sprache nicht kennst, schalte einfach den Übersetzer im Spiel ein — das ist sehr einfach.\nWenn du nicht weißt, wie man ihn aktiviert, sag einfach Bescheid :)\nWenn ich AFK bin, antworte ich, wenn ich zurück bin.`,
+  fr: `Tu es vraiment ici ? D’accord...\n\nJe m’appelle Ilya. On peut discuter. Si tu ne connais pas la langue, active simplement le traducteur dans le jeu — c’est très facile.\nSi tu ne sais pas comment l’activer, dis-moi :) \nSi je suis AFK, je répondrai quand je reviendrai.`,
+  es: `¿De verdad estás aquí? Vale...\n\nMe llamo Ilya. Podemos hablar. Si no conoces el idioma, solo activa el traductor del juego — es muy fácil.\nSi no sabes cómo activarlo, dímelo :)\nSi estoy AFK, responderé cuando vuelva.`,
+  pl: `Naprawdę tu jesteś? Okej...\n\nNazywam się Ilya. Możemy pogadać. Jeśli nie znasz języka, po prostu włącz tłumacza w grze — to bardzo łatwe.\nJeśli nie wiesz jak go włączyć, daj znać :)\nJeśli jestem AFK, odpowiem jak wrócę.`,
+  ja: `本当にここにいるの？オーケー…\n\n私はイリヤです。話しましょう。言語が分からないなら、ゲーム内の翻訳機をオンにしてください — とても簡単です。\nもし有効にする方法が分からなければ教えてください :)\nAFKのときは戻ったら返信します。`,
+  th: `คุณอยู่ที่นี่จริงเหรอ? โอเค...\n\nฉันชื่ออิลยา เราคุยกันได้ ถ้าคุณไม่รู้ภาษา ให้เปิดตัวแปลในเกม — มันง่ายมาก\nถ้าคุณไม่รู้วิธีเปิดใช้งาน บอกฉันได้เลย :)\nถ้าฉัน AFK ฉันจะตอบเมื่อกลับมา`,
+  zh: `你真的在这里吗？好吧……\n\n我叫伊利亚，我们可以聊天。如果你不懂语言，就打开游戏里的翻译器——这很简单。\n如果你不知道怎么开启，告诉我就行 :)\n如果我在AFK，回来后我会回复你`
 };
 
 const NICK_REPLY = {
-  ru: `Замени этот текст на своё сообщение для тех кто ввёл ник.\n\nЗдесь можно написать что угодно — оно появится после отправки.`,
-  en: `Replace this with your reply message for people who left their nickname.\n\nWrite whatever you want here.`,
-  de: `Ersetze dies durch deine Antwortnachricht für Leute, die ihren Nicknamen eingegeben haben.`,
-  fr: `Remplace ceci par ton message de réponse pour ceux qui ont laissé leur pseudo.`,
-  es: `Reemplaza esto con tu mensaje de respuesta para quienes dejaron su nick.`,
-  pl: `Zastąp to swoją wiadomością odpowiedzi dla osób, które podały nick.`,
-  ja: `ニックネームを入力した人への返信メッセージに置き換えてください。`,
-  th: `แทนที่ด้วยข้อความตอบกลับสำหรับคนที่ฝากนิคไว้`,
-  zh: `请替换为给留下昵称的人的回复消息。`
+  ru: `Ты хочешь что бы я тебе написал и не пишешь мне...?\n\nИзвини я не записываю тут ники и не храню историю, просто напиши мне :3`,
+  en: `Do you want me to write to you but you’re not writing to me…?\n\nSorry, I don’t keep track of nicknames here and I don’t save chat history — just write to me :3`,
+  de: `Du willst, dass ich dir schreibe, aber du schreibst mir nicht…?\n\nSorry, ich merke mir hier keine Nicknames und speichere keinen Chatverlauf — schreib mir einfach :3`,
+  fr: `Tu veux que je t’écrive mais tu ne m’écris pas…?\n\nDésolé, je ne garde pas les pseudos ici et je n’enregistre pas l’historique — écris-moi simplement :3`,
+  es: `¿Quieres que te escriba pero tú no me escribes…?\n\nLo siento, no guardo nicks aquí ni historial de chat — solo escríbeme :3`,
+  pl: `Chcesz, żebym do ciebie pisał, ale ty do mnie nie piszesz…?\n\nPrzepraszam, nie zapisuję tu nicków ani historii rozmów — po prostu napisz do mnie :3`,
+  ja: `私に書いてほしいのに、あなたは書いてこないの…？\n\nごめん、ここではニックネームもチャット履歴も保存していないんだ — ただ話しかけてね :3`,
+  th: `คุณอยากให้ฉันเขียนหา แต่คุณไม่เขียนมาหาฉัน…?\n\nขอโทษนะ ฉันไม่ได้เก็บชื่อเล่นหรือประวัติแชทไว้ที่นี่ — แค่พิมพ์มาหาฉันก็พอ :3`,
+  zh: `你想让我给你写，但你却不写给我……？\n\n抱歉，我不会在这里记录昵称，也不会保存聊天历史——直接跟我说话就好 :3`
 };
 
 const NICK_LABELS = {
